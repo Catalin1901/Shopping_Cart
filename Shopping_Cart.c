@@ -328,7 +328,7 @@ input:
         else
         {
             strcpy(cump2->nume_produs, mask);
-            printf("cump2->nume =  %s\n", cump2->nume_produs);
+            // printf("cump2->nume =  %s\n", cump2->nume_produs);
             id2 = 0;
         }
 
