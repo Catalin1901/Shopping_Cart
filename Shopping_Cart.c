@@ -156,7 +156,7 @@ int name_or_id(char input[]) // if the user input is ID or name
 void main()
 {
     FILE *stock_input;
-    stock_input = fopen("stoc.txt", "rt");
+    stock_input = fopen("stock.txt", "rt");
     Verify_file(stock_input);
 
     // Lista stoc
@@ -248,15 +248,15 @@ buy:
 
     if (id2 == 1)
     {
-        for (p = cap_lista; p->urmator != NULL; p = p->urmator)
+        for (p = cap_lista; p != NULL; p = p->urmator)
         {
             if (cump1->id_produs == p->id_produs)
             {
-                if (cump1->cantitate > p->cant_produs)
+                while (cump1->cantitate > p->cant_produs)
                 {
                     printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
                     scanf("%d", &cump1->cantitate);
-                    break;
+                    //break;
                 }
                 strcpy(cump1->nume_produs, p->name_produs);
                 break;
@@ -269,13 +269,13 @@ buy:
         {
             if (name_compare(cump1->nume_produs, p->name_produs))
             {
-                if (cump1->cantitate > p->cant_produs)
+                while (cump1->cantitate > p->cant_produs)
                 {
                     printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
                     scanf("%d", &cump1->cantitate);
                     cump1->id_produs = p->id_produs;
                     ok = 1;
-                    break;
+                    //break;
                 }
                 ok = 1; // if product found, set ok to 1
                 cump1->id_produs = p->id_produs;
@@ -334,7 +334,7 @@ input:
 
         if (id2 == 1)
         {
-            // checkinf if the product is already in the basket
+            // checking if the product is already in the basket
             for (cump1 = cmp_lista, i = 1; cump1 != NULL || i < numar_prod_cump; cump1 = cump1->urmator, i++)
             {
                 if (cump1->id_produs == cump2->id_produs)
@@ -346,18 +346,11 @@ input:
                         if (cump1->id_produs == p->id_produs)
 
                         {
-                            if (cump1->cantitate > p->cant_produs)
+                            while (cump1->cantitate > p->cant_produs)
                             {
                                 printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
                                 scanf("%d", &cump1->cantitate);
                                 strcpy(cump1->nume_produs, p->name_produs);
-
-                                // In case user input is more than the stock quantity AGAIN...
-                                if (cump1->cantitate > p->cant_produs)
-                                {
-                                    printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
-                                    scanf("%d", &cump1->cantitate);
-                                }
                             }
                             strcpy(cump1->nume_produs, p->name_produs);
                         }
@@ -374,7 +367,7 @@ input:
                     {
                         printf("Tastati cantitatea dorita: ");
                         scanf("%d", &cantitate);
-                        if (cantitate > p->cant_produs)
+                        while (cantitate > p->cant_produs)
                         {
                             printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
                             scanf("%d", &cantitate);
@@ -407,7 +400,7 @@ input:
                     for (p = cap_lista, i = 1; p != NULL; p = p->urmator, i++)
                     {
                         if (cump1->id_produs == p->id_produs)
-                            if (cump1->cantitate > p->cant_produs)
+                            while (cump1->cantitate > p->cant_produs)
                             {
                                 printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
                                 scanf("%d", &cump1->cantitate);
@@ -426,7 +419,7 @@ input:
                     {
                         printf("Tastati cantitatea dorita: ");
                         scanf("%d", &cantitate);
-                        if (cantitate > p->cant_produs)
+                        while (cantitate > p->cant_produs)
                         {
                             printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
                             scanf("%d", &cantitate);
