@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// IDEI:
-// Functia de comparare nume ca sa nu mai modifice numele din lista
-//verificare input cantitate = 0 sau < 0
+
 
 typedef struct structura
 {
@@ -12,7 +10,7 @@ typedef struct structura
     char name_produs[20];
     int cant_produs;
     float pret_produs;
-    struct structura *urmator;
+    struct structura *next;
 } STR; // p q cap_lista
 
 typedef struct cumparaturi
@@ -20,13 +18,16 @@ typedef struct cumparaturi
     int id_produs;
     char nume_produs[10];
     int cantitate;
-    struct cumparaturi *urmator;
+    struct cumparaturi *next;
 } CUMP; // cump1 cump2 cmp_lista
 
-int name_compare(char *name, char *name2)
+int name_compare(char n[], char m[])
 {
+    char name[20], name2[20];
+    strcpy(name, n);
+    strcpy(name2, m);
     // exluding the input mistake by uppering both strings
-    for (int i = 0; name[i] != NULL; i++)
+    for (int i = 0; i < strlen(name); i++)
     {
         if (name[i] >= 'a' && name[i] <= 'z')
             name[i] = name[i] - 32;
@@ -63,7 +64,7 @@ void deleteNode_ID(CUMP **head_ref, int key)
     // If head node itself holds the key to be deleted
     if (temp != NULL && temp->id_produs == key)
     {
-        *head_ref = temp->urmator; // Changed head
+        *head_ref = temp->next; // Changed head
         free(temp);                // free old head
         return;
     }
@@ -73,7 +74,7 @@ void deleteNode_ID(CUMP **head_ref, int key)
     while (temp != NULL && temp->id_produs != key)
     {
         prev = temp;
-        temp = temp->urmator;
+        temp = temp->next;
     }
 
     // If key was not present in linked list
@@ -81,7 +82,7 @@ void deleteNode_ID(CUMP **head_ref, int key)
         return;
 
     // Unlink the node from linked list
-    prev->urmator = temp->urmator;
+    prev->next = temp->next;
 
     free(temp); // Free memory
 }
@@ -94,7 +95,7 @@ void deleteNode_NAME(CUMP **head_ref, char *key)
     // If head node itself holds the key to be deleted
     if (temp != NULL && name_compare(temp->nume_produs, key))
     {
-        *head_ref = temp->urmator; // Changed head
+        *head_ref = temp->next; // Changed head
         free(temp);                // free old head
         return;
     }
@@ -104,7 +105,7 @@ void deleteNode_NAME(CUMP **head_ref, char *key)
     while (temp != NULL && !name_compare(temp->nume_produs, key))
     {
         prev = temp;
-        temp = temp->urmator;
+        temp = temp->next;
     }
 
     // If key was not present in linked list
@@ -112,7 +113,7 @@ void deleteNode_NAME(CUMP **head_ref, char *key)
         return;
 
     // Unlink the node from linked list
-    prev->urmator = temp->urmator;
+    prev->next = temp->next;
 
     free(temp); // Free memory
 }
@@ -131,14 +132,14 @@ void append(CUMP **head_ref, int new_id, int new_cantitate, char nume[])
 
     /* 3. This new node is going to be the last node, so make next
           of it as NULL*/
-    new_node->urmator = NULL;
+    new_node->next = NULL;
 
     /* 4. Else traverse till the last node */
-    while (last->urmator != NULL)
-        last = last->urmator;
+    while (last->next != NULL)
+        last = last->next;
 
     /* 5. Change the next of last node */
-    last->urmator = new_node;
+    last->next = new_node;
     return;
 }
 
@@ -159,7 +160,7 @@ void main()
     stock_input = fopen("stock.txt", "rt");
     Verify_file(stock_input);
 
-    // Lista stoc
+    // Stock list
     STR *cap_lista, *p, *q;
     int no_stock_products = 0, nr;
     int i;
@@ -167,7 +168,7 @@ void main()
     p = (STR *)malloc(sizeof(STR));
     if (p == NULL)
     {
-        printf("Alocare esuata");
+        printf("Memory allocation failed!");
         exit(-1);
     }
 
@@ -175,7 +176,7 @@ void main()
     fscanf(stock_input, "%s", &p->name_produs);
     fscanf(stock_input, "%d", &p->cant_produs);
     fscanf(stock_input, "%f", &p->pret_produs); // (*p).valoare
-    p->urmator = NULL;
+    p->next = NULL;
     cap_lista = p;
 
     while (!feof(stock_input))
@@ -183,46 +184,44 @@ void main()
         q = (STR *)malloc(sizeof(STR));
         if (q == NULL)
         {
-            printf("Alocarea a esuat");
+            printf("Memory allocation failed!");
             exit(-1);
         }
-        // printf("Tastati id ul produsului, cantitatea si pretul: ", i + 1);
+        
         fscanf(stock_input, "%d", &(q->id_produs));
         fscanf(stock_input, "%s", (q->name_produs));
         fscanf(stock_input, "%d", &(q->cant_produs));
         fscanf(stock_input, "%f", &(q->pret_produs));
-        q->urmator = NULL;
-        p->urmator = q;
+        q->next = NULL;
+        p->next = q;
         p = q;
         no_stock_products++;
     }
     no_stock_products++;
 
-    for (p = cap_lista, i = 1; p != NULL; p = p->urmator, i++)
+    for (p = cap_lista, i = 1; p != NULL; p = p->next, i++)
     {
-        printf("Elementul cu id ul: %d si numele: %s se gaseste in cantitatea: %d la pretul %.2f EUR\n", p->id_produs, p->name_produs, p->cant_produs, p->pret_produs);
+        printf("Element with id: %d called: %s is in stock with quantity: %d at %.2f EUR\n", p->id_produs, p->name_produs, p->cant_produs, p->pret_produs);
     }
 
-    // Lista cos cumparaturi
+    // Cart list
     CUMP *cmp_lista, *cump1, *cump2;
     int numar_prod_cump = 0, j;
 
-    // MODIFICA ASTA CA SA NU MAI CEARA NUMAR DE PRODUSE
-    //  printf("Scrieti cate tipuri de produse doriti sa cumparati: ");
-    //  scanf("%d", &numar_prod_cump);
 
-    // Primul element al cosului
+
+    // First element of Cart
     cump1 = (CUMP *)malloc(sizeof(CUMP));
     if (cump1 == NULL)
     {
-        printf("alocarea a esuat");
+        printf("Memory allocation failed");
         exit(1);
     }
 
     char mask[10];
     int id2; // knows if the user works with ID or name. If 1, user works with ID
 
-    printf("Tastati numele sau ID ul produsului dorit:");
+    printf("Please enter the name or ID of the product you want: ");
 
 buy:
 
@@ -241,20 +240,20 @@ buy:
     }
 
     fflush(stdin);
-    printf("Tastati cantitatea pe care o doriti: ");
+    printf("Enter the quantity: ");
     scanf("%d", &cump1->cantitate);
     numar_prod_cump = 1;
     int ok = 0;
 
     if (id2 == 1)
     {
-        for (p = cap_lista; p != NULL; p = p->urmator)
+        for (p = cap_lista; p != NULL; p = p->next)
         {
             if (cump1->id_produs == p->id_produs)
             {
                 while (cump1->cantitate > p->cant_produs)
                 {
-                    printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
+                    printf("Quantity not available in stock. Please re-enter a smaller than %d quantity: ", p->cant_produs + 1);
                     scanf("%d", &cump1->cantitate);
                     //break;
                 }
@@ -265,13 +264,13 @@ buy:
     }
     else
     {
-        for (p = cap_lista; p != NULL; p = p->urmator)
+        for (p = cap_lista; p != NULL; p = p->next)
         {
             if (name_compare(cump1->nume_produs, p->name_produs))
             {
                 while (cump1->cantitate > p->cant_produs)
                 {
-                    printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
+                    printf("Quantity not available in stock. Please re-enter a smaller than %d quantity: ", p->cant_produs + 1);
                     scanf("%d", &cump1->cantitate);
                     cump1->id_produs = p->id_produs;
                     ok = 1;
@@ -285,21 +284,21 @@ buy:
         // checks if product was found or not
         if (ok == 0)
         {
-            printf("Produsul nu a fost gasit in lista.\nTastati din nou numele sau ID ul produsului: ");
+            printf("Product not found in list.\nPlease re-enter the name or ID: ");
             goto buy;
         }
     }
 
-    cump1->urmator = NULL;
+    cump1->next = NULL;
     cmp_lista = cump1;
 
-    printf("\nProdusul cu id ul: %d a fost adaugat in cos in cantitate de: %d\n", cump1->id_produs, cump1->cantitate);
+    printf("\nProduct with ID: %d added in cart in %d quantity\n", cump1->id_produs, cump1->cantitate);
 
-    char r; // raspunsul
+    char r; // User answer
     int id, cantitate;
 
-    // Modificare cos de cumparaturi
-    printf("Daca doriti sa adaugati/modificati produse in cos, apasati a. Daca doriti sa stergeti produse din cos, apasati s. Altfel, apasati n : ");
+    // Modify Cart
+    printf("If you want to add or modify products in your cart, press a.\nIf you want to delete products from cart, press s.\nOtherwise, press n: ");
 
 input:
 
@@ -315,7 +314,7 @@ input:
     // adding
     case 'a':
 
-        printf("Tastati id ul sau numele produsului dorit: ");
+        printf("Please enter the name or ID of the product you want: ");
         scanf("%s", &mask);
 
         cump2 = (CUMP *)malloc(sizeof(CUMP));
@@ -328,27 +327,26 @@ input:
         else
         {
             strcpy(cump2->nume_produs, mask);
-            // printf("cump2->nume =  %s\n", cump2->nume_produs);
             id2 = 0;
         }
 
         if (id2 == 1)
         {
             // checking if the product is already in the basket
-            for (cump1 = cmp_lista, i = 1; cump1 != NULL || i < numar_prod_cump; cump1 = cump1->urmator, i++)
+            for (cump1 = cmp_lista, i = 1; cump1 != NULL || i < numar_prod_cump; cump1 = cump1->next, i++)
             {
                 if (cump1->id_produs == cump2->id_produs)
                 {
-                    printf("Produsul este deja in cos. Tastati noua cantitate dorita: ");
+                    printf("Product already in cart. Enter the new quantity: ");
                     scanf("%d", &cump1->cantitate);
-                    for (p = cap_lista, i = 1; p != NULL; p = p->urmator, i++)
+                    for (p = cap_lista, i = 1; p != NULL; p = p->next, i++)
                     {
                         if (cump1->id_produs == p->id_produs)
 
                         {
                             while (cump1->cantitate > p->cant_produs)
                             {
-                                printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
+                                printf("Quantity not available in stock. Please re-enter a smaller than %d quantity: ", p->cant_produs + 1);
                                 scanf("%d", &cump1->cantitate);
                                 strcpy(cump1->nume_produs, p->name_produs);
                             }
@@ -361,48 +359,48 @@ input:
 
             if (cump1 == NULL)
             {
-                for (p = cap_lista, i = 1; p != NULL; p = p->urmator, i++)
+                for (p = cap_lista, i = 1; p != NULL; p = p->next, i++)
                 {
                     if (p->id_produs == cump2->id_produs)
                     {
-                        printf("Tastati cantitatea dorita: ");
+                        printf("Enter the quantity: ");
                         scanf("%d", &cantitate);
                         while (cantitate > p->cant_produs)
                         {
-                            printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
+                            printf("Quantity not available in stock. Please re-enter a smaller than %d quantity: ", p->cant_produs + 1);
                             scanf("%d", &cantitate);
                         }
 
                         append(&cmp_lista, cump2->id_produs, cantitate, p->name_produs);
                         numar_prod_cump++;
-                        printf("Dorititi sa mai faceti adaugati produse in cosul de cumparaturi? a->adaugare/modificare, s->stergere, n->nu: ");
+                        printf("Do you want to make other changes to the cart? a->add/modify, s->delete, n->no: ");
 
                         goto input;
                     }
                 }
-                printf("Produs introdus gresit. Nicio schimbare efectuata in cos.");
-                printf("Daca doriti sa adaugati/modificati produse in cos, apasati a. Daca doriti sa stergeti produse din cos, apasati s. Altfel, apasati n : ");
+                printf("Wrong input. Cart has not been modified!\n");
+                printf("If you want to add or modify products in your cart, press a.\nIf you want to delete products from cart, press s.\nOtherwise, press n: ");
 
                 goto input;
             }
 
-            printf("Dorititi sa mai faceti adaugati produse in cosul de cumparaturi? a->adaugare/modificare, s->stergere, n->nu: ");
+            printf("Do you want to make other changes to the cart? a->add/modify, s->delete, n->no: ");
             goto input;
         }
         else
         {
-            for (cump1 = cmp_lista, i = 1; cump1 != NULL || i < numar_prod_cump; cump1 = cump1->urmator, i++)
+            for (cump1 = cmp_lista, i = 1; cump1 != NULL || i < numar_prod_cump; cump1 = cump1->next, i++)
             {
                 if (name_compare(cump1->nume_produs, cump2->nume_produs))
                 {
-                    printf("Produsul este deja in cos. Tastati noua cantitate dorita: ");
+                    printf("Product already in cart. Enter the new quantity: ");
                     scanf("%d", &cump1->cantitate);
-                    for (p = cap_lista, i = 1; p != NULL; p = p->urmator, i++)
+                    for (p = cap_lista, i = 1; p != NULL; p = p->next, i++)
                     {
                         if (cump1->id_produs == p->id_produs)
                             while (cump1->cantitate > p->cant_produs)
                             {
-                                printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
+                                printf("Quantity not available in stock. Please re-enter a smaller than %d quantity: ", p->cant_produs + 1);
                                 scanf("%d", &cump1->cantitate);
                                 cump1->id_produs = p->id_produs;
                             }
@@ -413,38 +411,38 @@ input:
 
             if (cump1 == NULL)
             {
-                for (p = cap_lista, i = 1; p != NULL; p = p->urmator, i++)
+                for (p = cap_lista, i = 1; p != NULL; p = p->next, i++)
                 {
                     if (name_compare(p->name_produs, cump2->nume_produs))
                     {
-                        printf("Tastati cantitatea dorita: ");
+                        printf("Enter the quantity: ");
                         scanf("%d", &cantitate);
                         while (cantitate > p->cant_produs)
                         {
-                            printf("Numarul de produse nu se afla pe stoc. Introduceti un numar mai mic de %d produse: ", p->cant_produs + 1);
+                            printf("Quantity not available in stock. Please re-enter a smaller than %d quantity: ", p->cant_produs + 1);
                             scanf("%d", &cantitate);
                         }
 
                         append(&cmp_lista, p->id_produs, cantitate, p->name_produs);
-                        printf("Dorititi sa mai faceti adaugati produse in cosul de cumparaturi? a->adaugare/modificare, s->stergere, n->nu:  ");
+                        printf("Do you want to make other changes to the cart? a->add/modify, s->delete, n->no: ");
 
                         goto input;
                     }
                 }
-                printf("Produs introdus gresit. Nicio schimbare efectuata in cos.");
-                printf("Daca doriti sa adaugati/modificati produse in cos, apasati a. Daca doriti sa stergeti produse din cos, apasati s. Altfel, apasati n : ");
+                printf("Wrong input. Cart has not been modified!\n");
+                printf("If you want to add or modify products in your cart, press a.\nIf you want to delete products from cart, press s.\nOtherwise, press n: ");
 
                 goto input;
             }
 
-            printf("Dorititi sa mai faceti adaugati produse in cosul de cumparaturi? a->adaugare/modificare, s->stergere, n->nu: ");
+            printf("Do you want to make other changes to the cart? a->add/modify, s->delete, n->no: ");
             goto input;
         }
 
-    // Stergere cos de cumparaturi
+    // Remove from cart
     case 's':
 
-        printf("Tastati id ul sau numele produsului pe care doriti sa l stergeti: ");
+        printf("Enter the ID or name of the product you want to remove from cart: ");
         scanf("%s", &mask);
         id2 = 1;
         if (name_or_id(mask))
@@ -456,16 +454,15 @@ input:
             id2 = 0;
         }
 
-        // scoate if ul name_or_id in fata pt eficienta ca la 'a'
         if (id2 == 1)
         {
-            for (cump1 = cmp_lista; cump1 != NULL; cump1 = cump1->urmator)
+            for (cump1 = cmp_lista; cump1 != NULL; cump1 = cump1->next)
             {
                 if (cump1->id_produs == atoi(mask))
                 {
                     deleteNode_ID(&cmp_lista, atoi(mask));
-                    printf("Produsul cu ID ul %s a fost sters din cos!\n", mask);
-                    printf("Dorititi sa mai faceti adaugati produse in cosul de cumparaturi? a->adaugare/modificare, s->stergere, n->nu: ");
+                    printf("Product with ID %s has been removed from cart!\n", mask);
+                    printf("Do you want to make other changes to the cart? a->add/modify, s->delete, n->no: ");
 
                     del = 1;
                     goto input;
@@ -474,13 +471,13 @@ input:
         }
         else
         {
-            for (cump1 = cmp_lista; cump1 != NULL; cump1 = cump1->urmator)
+            for (cump1 = cmp_lista; cump1 != NULL; cump1 = cump1->next)
             {
                 if (name_compare(cump1->nume_produs, mask))
                 {
                     deleteNode_NAME(&cmp_lista, mask);
-                    printf("Produsul %s a fost sters din cos!\n", mask);
-                    printf("Dorititi sa mai faceti adaugati produse in cosul de cumparaturi? a->adaugare/modificare, s->stergere, n->nu: ");
+                    printf("Product with ID %s has been removed from cart!\n", mask);
+                    printf("Do you want to make other changes to the cart? a->add/modify, s->delete, n->no: ");
 
                     del = 1;
                     goto input;
@@ -490,30 +487,26 @@ input:
 
         if (del == 0)
         {
-            printf("Produsul nu se afla in cos!");
+            printf("Product not in cart!");
             goto input;
         }
-
-        // printf("Dorititi sa mai faceti adaugati produse in cosul de cumparaturi? a->adaugare/modificare, s->stergere, n->nu ");
-        // goto input;
 
     case 'n':
         break;
 
-    // input gresit
+    // Wrong input
     default:
-        printf("Comanda introdusa gresit. Incercati din nou: a/s/n");
+        printf("Wrong input.\nPlease try again a/s/n: ");
         goto input;
     }
-    printf("Cosul de cumparaturi dupa modificari contine:  \n");
+    printf("Current cart:  \n");
 
-    // Suma totala a cosului
-    // Alta varianta pentru suma: adaugam in crearea listei cosului de cumparaturi si pretul, iar la suma avem un for mai putin
+    // Total sum
     float suma = 0;
-    for (cump1 = cmp_lista, i = 1; cump1 != NULL; cump1 = cump1->urmator, i++)
+    for (cump1 = cmp_lista, i = 1; cump1 != NULL; cump1 = cump1->next, i++)
     {
-        printf("Produsul cu id ul: %d si numele %s a fost adaugat in cos in cantitate de: %d\n", cump1->id_produs, cump1->nume_produs, cump1->cantitate);
-        for (p = cap_lista, j = 1; p != NULL; p = p->urmator, j++)
+        printf("Product with ID: %d name: %s quantity:  %d\n", cump1->id_produs, cump1->nume_produs, cump1->cantitate);
+        for (p = cap_lista, j = 1; p != NULL; p = p->next, j++)
         {
             if (cump1->id_produs == p->id_produs)
             {
@@ -521,7 +514,7 @@ input:
             }
         }
     }
-    printf("Totalul de plata este: %.2f EUR. Va dorim o zi buna!\n\n", suma);
+    printf("Checkout Total: %.2f EUR. Have a nice day!\n\n", suma);
 
     
     char wait_for_input;
